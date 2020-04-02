@@ -1,95 +1,134 @@
- [ ![Download](https://api.bintray.com/packages/takusemba/maven/spotlight/images/download.svg) ](https://bintray.com/takusemba/maven/spotlight/_latestVersion) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-
 # Spotlight
-#### Android Library that lights items for tutorials or walk-throughs etc...
 
-<img src="https://github.com/TakuSemba/Spotlight/blob/master/arts/logo.png" alt="alt text" style="width:200;height:200">
+<img src="https://github.com/TakuSemba/Spotlight/blob/master/arts/logo_yello.png" alt="alt text" style="width:200;height:200">
+
+![Build Status](https://app.bitrise.io/app/bcf0d555e7b41eb2/status.svg?token=2wvl_JilEbg6HB3B1tfKpA&branch=master)
+![Download](https://api.bintray.com/packages/takusemba/maven/spotlight/images/download.svg)
+![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)
+![API](https://img.shields.io/badge/API-14%2B-brightgreen.svg?style=flat)
 
 ## Gradle
 
 ```groovy
 dependencies {
-    compile 'com.github.takusemba:spotlight:1.0.1'
+    implementation 'com.github.takusemba:spotlight:x.x.x'
 }
 ```
 
 
 ## Usage
 
-```java
-
-Spotlight.with(this)
-        .setDuration(1000L) // duration of Spotlight emerging and disappearing in ms
-        .setAnimation(new DecelerateInterpolator(2f)) // animation of Spotlight
-        .setTargets(firstTarget, secondTarget, thirdTarget ...) // set targets. see below for more info
-        .setOnSpotlightStartedListener(new OnSpotlightStartedListener() { // callback when Spotlight starts
-            @Override
-            public void onStarted() {
-                Toast.makeText(context, "spotlight is started", Toast.LENGTH_SHORT).show();
-            }
-        })
-        .setOnSpotlightEndedListener(new OnSpotlightEndedListener() { // callback when Spotlight ends
-            @Override
-            public void onEnded() {
-                Toast.makeText(context, "spotlight is ended", Toast.LENGTH_SHORT).show();
-            }
-        })
-        .start(); // start Spotlight
-                        
+```kt
+val spotlight = Spotlight.Builder(this)
+    .setTargets(firstTarget, secondTarget, thirdTarget ...)
+    .setBackgroundColor(R.color.spotlightBackground)
+    .setDuration(1000L)
+    .setAnimation(DecelerateInterpolator(2f))
+    .setContainer(viewGroup)
+    .setOnSpotlightListener(object : OnSpotlightListener {
+      override fun onStarted() {
+        Toast.makeText(this@MainActivity, "spotlight is started", Toast.LENGTH_SHORT).show()
+      }
+      override fun onEnded() {
+        Toast.makeText(this@MainActivity, "spotlight is ended", Toast.LENGTH_SHORT).show()
+      }
+    })
+    .build()         
 ```
 
-if you want to show Spotlight immediately, use `addOnGlobalLayoutListener` to wait until views are drawn.
+If you want to show Spotlight immediately, you have to wait until views are laid out.
 
-```java
-view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-    @Override public void onGlobalLayout() {
-        view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-        Spotlight.with(this)...start();
-    }
-});
+```kt
+// with core-ktx method.
+view.doOnPreDraw { Spotlight.Builder(this)...start() }
+```
+
+<br/>
+<br/>
+
+<img src="https://github.com/TakuSemba/Spotlight/blob/master/arts/customTarget.gif" align="left" width="30%">
+
+## Target
+Create a Target to add Spotlight.
+
+Target is a spot to be casted by Spotlight. You can add multiple targets to Spotlight.
+
+```kt
+val target = Target.Builder()
+    .setAnchor(100f, 100f)
+    .setShape(Circle(100f))
+    .setEffect(RippleEffect(100f, 200f, argb(30, 124, 255, 90)))
+    .setOverlay(layout)
+    .setOnTargetListener(object : OnTargetListener {
+      override fun onStarted() {
+        makeText(this@MainActivity, "first target is started", LENGTH_SHORT).show()
+      }
+      override fun onEnded() {
+        makeText(this@MainActivity, "first target is ended", LENGTH_SHORT).show()
+      }
+    })
+    .build()
 ```
 
 
-### Simple Target
-simply set a title and description, these position will be automatically calculated.
+<br/>
+<br/>
 
-<img src="https://github.com/TakuSemba/Spotlight/blob/master/arts/simpleTarget.gif" alt="alt text" style="width:200;height:200">
+## Start/Finish Spotlight.
 
-```java
+```kt
+val spotlight = Spotlight.Builder(this)...start()
 
-SimpleTarget simpleTarget = new SimpleTarget.Builder(this)
-    .setPoint(100f, 340f) // position of the Target. setPoint(Point point), setPoint(View view) will work too.
-    .setRadius(80f) // radius of the Target
-    .setTitle("the title") // title
-    .setDescription("the description") // description
-    .build();
-
+spotlight.finish()
 ```
 
-### Custom Target
-use your own custom view.
+## Next/Previous/Show Target.
 
-<img src="https://github.com/TakuSemba/Spotlight/blob/master/arts/customTarget.gif" alt="alt text" style="width:200;height:200">
+```kt
+val spotlight = Spotlight.Builder(this)...start()
 
-```java
+spotlight.next()
 
-CustomTarget customTarget = new CustomTarget.Builder(this)
-    .setPoint(100f, 340f) // position of the Target. setPoint(Point point), setPoint(View view) will work too.
-    .setRadius(80f) // radius of the Target
-    .setView(R.layout.layout_target) // custom view
-    .build();
+spotlight.previous()
 
+spotlight.show(2)
 ```
 
-### Sample
+## Custom Shape
+Custom shape is available implementing Shape interface
+
+
+```kt
+class CustomShape(
+    override val duration: Long,
+    override val interpolator: TimeInterpolator
+) : Shape {
+
+  override fun draw(canvas: Canvas, point: PointF, value: Float, paint: Paint) {
+    // draw your shape here.
+  }
+}
+```
+
+## Custom Effect
+Custom effect is available implementing Effect interface
+
+
+```kt
+class CustomEffect(
+    override val duration: Long,
+    override val interpolator: TimeInterpolator,
+    override val repeatMode: Int
+) : Effect {
+
+  override fun draw(canvas: Canvas, point: PointF, value: Float, paint: Paint) {
+    // draw your effect here.
+  }
+}
+```
+
+## Sample
 Clone this repo and check out the [app](https://github.com/TakuSemba/Spotlight/tree/master/app) module.
-
-## Change Log
-
-### Version: 1.0.0
-
-  * Initial Build
-
 
 ## Author
 
