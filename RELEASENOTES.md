@@ -1,6 +1,28 @@
 Release notes
 ==========
 
+Version 2.0.5 **(1021-3-19)**
+----------------------------
+ - Fix onStarted is called twice. ([#120](https://github.com/TakuSemba/Spotlight/issues/120))
+
+Version 2.0.4 **(1021-2-27)**
+----------------------------
+ - Update Kotlin to 1.4.31.
+
+Version 2.0.3 **(1020-10-26)**
+----------------------------
+ - Accept ColorInt as background color. ([#108](https://github.com/TakuSemba/Spotlight/pull/108))
+
+Version 2.0.2 **(1020-9-4)**
+----------------------------
+ - Update dependencies.
+ - Provide overloaded constructors for `Shape` and `Effect` implementations. ([#87](https://github.com/TakuSemba/Spotlight/issues/87))
+ - Throw an Exception when you add an empty target to Spotlight. ([#84](https://github.com/TakuSemba/Spotlight/issues/84))
+ - Fix anchor is a bit off when using custom container.
+ - Fix issue where SpotlightView is leaked via an animation listener. ([#93](https://github.com/TakuSemba/Spotlight/issues/93))
+ - Fix behavior of RippleEffect.
+ - Start Effect after Target is drawn.
+
 Version 2.0.1 **(1019-11-11)**
 ----------------------------
  - Fix internal logic.

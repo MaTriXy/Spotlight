@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 /**
  * Draws an ripple effects.
  */
-class RippleEffect(
+class RippleEffect @JvmOverloads constructor(
     private val offset: Float,
     private val radius: Float,
     @ColorInt private val color: Int,
@@ -26,9 +26,11 @@ class RippleEffect(
   }
 
   override fun draw(canvas: Canvas, point: PointF, value: Float, paint: Paint) {
+    val radius = offset + ((radius - offset) * value)
+    val alpha = (255 - value * 255).toInt()
     paint.color = color
-    val offset = (radius - offset) * value
-    canvas.drawCircle(point.x, point.y, offset + offset, paint)
+    paint.alpha = alpha
+    canvas.drawCircle(point.x, point.y, radius, paint)
   }
 
   companion object {

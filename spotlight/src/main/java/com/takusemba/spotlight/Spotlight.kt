@@ -7,7 +7,9 @@ import android.app.Activity
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.animation.DecelerateInterpolator
+import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
+import androidx.core.content.ContextCompat
 import java.util.concurrent.TimeUnit
 
 /**
@@ -93,11 +95,8 @@ class Spotlight private constructor(
     if (currentIndex == NO_POSITION) {
       val target = targets[index]
       currentIndex = index
-      spotlight.startTarget(target, object : AnimatorListenerAdapter() {
-        override fun onAnimationStart(animation: Animator) {
-          target.listener?.onStarted()
-        }
-      })
+      spotlight.startTarget(target)
+      target.listener?.onStarted()
     } else {
       spotlight.finishTarget(object : AnimatorListenerAdapter() {
         override fun onAnimationEnd(animation: Animator) {
@@ -107,11 +106,8 @@ class Spotlight private constructor(
           if (index < targets.size) {
             val target = targets[index]
             currentIndex = index
-            spotlight.startTarget(target, object : AnimatorListenerAdapter() {
-              override fun onAnimationStart(animation: Animator) {
-                target.listener?.onStarted()
-              }
-            })
+            spotlight.startTarget(target)
+            target.listener?.onStarted()
           } else {
             finishSpotlight()
           }
@@ -126,7 +122,7 @@ class Spotlight private constructor(
   private fun finishSpotlight() {
     spotlight.finishSpotlight(duration, interpolator, object : AnimatorListenerAdapter() {
       override fun onAnimationEnd(animation: Animator) {
-        spotlight.removeAllViews()
+        spotlight.cleanup()
         container.removeView(spotlight)
         spotlightListener?.onEnded()
       }
@@ -147,7 +143,7 @@ class Spotlight private constructor(
     private var targets: Array<Target>? = null
     private var duration: Long = DEFAULT_DURATION
     private var interpolator: TimeInterpolator = DEFAULT_ANIMATION
-    @ColorRes private var backgroundColor: Int = DEFAULT_OVERLAY_COLOR
+    @ColorInt private var backgroundColor: Int = DEFAULT_OVERLAY_COLOR
     private var container: ViewGroup? = null
     private var listener: OnSpotlightListener? = null
 
@@ -155,6 +151,7 @@ class Spotlight private constructor(
      * Sets [Target]s to show on [Spotlight].
      */
     fun setTargets(vararg targets: Target): Builder = apply {
+      require(targets.isNotEmpty()) { "targets should not be empty. " }
       this.targets = arrayOf(*targets)
     }
 
@@ -162,6 +159,7 @@ class Spotlight private constructor(
      * Sets [Target]s to show on [Spotlight].
      */
     fun setTargets(targets: List<Target>): Builder = apply {
+      require(targets.isNotEmpty()) { "targets should not be empty. " }
       this.targets = targets.toTypedArray()
     }
 
@@ -173,9 +171,16 @@ class Spotlight private constructor(
     }
 
     /**
+     * Sets [backgroundColor] resource on [Spotlight].
+     */
+    fun setBackgroundColorRes(@ColorRes backgroundColorRes: Int): Builder = apply {
+      this.backgroundColor = ContextCompat.getColor(activity, backgroundColorRes)
+    }
+
+    /**
      * Sets [backgroundColor] on [Spotlight].
      */
-    fun setBackgroundColor(@ColorRes backgroundColor: Int): Builder = apply {
+    fun setBackgroundColor(@ColorInt backgroundColor: Int): Builder = apply {
       this.backgroundColor = backgroundColor
     }
 
@@ -222,7 +227,7 @@ class Spotlight private constructor(
 
       private val DEFAULT_ANIMATION = DecelerateInterpolator(2f)
 
-      @ColorRes private val DEFAULT_OVERLAY_COLOR = R.color.background
+      @ColorInt private val DEFAULT_OVERLAY_COLOR: Int = 0x6000000
     }
   }
 }
